@@ -15,17 +15,20 @@
 obtain_spectra_from_inchiKey <- function(inchiKey) {
   # Define the URL
   url <- stringr::str_c("https://mona.fiehnlab.ucdavis.edu/rest/spectra/search?query=exists(compound.inchiKey%3A'", inchiKey, "')%20and%20exists((metaData.name%3A'ms%20level'%20and%20metaData.value%3A'MS2'))%20and%20exists((tags.text%3A'HMDB'))")
-
+  print(url)
   # Make the GET request
-  response <- httr::GET(url)
-
-  # Check the response status
-  if (httr::status_code(response) == 200) {
-
-    return(response)
-
-  } else {
-    print(paste("Request failed with status:", httr::status_code(response)))
+  if (!is.na(url)) {
+    response <- httr::GET(url)
+    
+    
+    # Check the response status
+    if (httr::status_code(response) == 200) {
+  
+      return(response)
+  
+    } else {
+      print(paste("Request failed with status:", httr::status_code(response)))
+    }
   }
 }
 

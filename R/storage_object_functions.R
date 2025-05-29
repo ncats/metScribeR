@@ -934,7 +934,7 @@ save_storage_object <- function(storage_object, save_file_path) {
 #' @keywords internal
 #' @noRd
 add_msms_information <- function(storage_object, relative_intensity_threshold = 40) {
-  storage_object$msms_df <- storage_object$standard_df %>% dplyr::select(.data$unique_standard_id)
+  storage_object$msms_df <- storage_object$standard_df %>% dplyr::filter(!is.na(inchiKey)) %>% dplyr::select(.data$unique_standard_id)
 
   results_list <- list()
 

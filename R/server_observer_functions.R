@@ -217,7 +217,7 @@ input_data_submitted_observer_function <- function(input, output, values){
 #'
 plot_location_event_printing_observer_function <- function(input) {
   shiny::observeEvent(input$plot_click, {
-    print(input$plot_click$x)
+    print(stringr::str_c('x=',input$plot_click$x, ' y=', input$plot_click$y))
   })
 }
 
