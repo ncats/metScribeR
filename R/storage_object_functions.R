@@ -790,7 +790,7 @@ find_adduct_conflicts <- function (storage_object, mz_tolerance = storage_object
     mz_i <- storage_object$adduct_df[[i, 'mz_value']]
     rt_i <- storage_object$adduct_df[[i, 'rt_value']]
 
-    conflict_results <- storage_object$adduct_df %>% dplyr::filter(.data$has_good_peak == T) %>%
+    conflict_results <- storage_object$adduct_df %>% dplyr::filter(.data$has_good_peak == T) %>% #note that this filter controls the behavior that only 'good' peaks can be considered as conflicts.
 
       dplyr::filter(.data$unique_adduct_id != storage_object$adduct_df[[i, 'unique_adduct_id']]) %>%
 
@@ -948,7 +948,7 @@ add_msms_information <- function(storage_object, relative_intensity_threshold = 
 
       results_list[[i]] <- temp %>%
                           dplyr::filter(.data$`ms level` == 'MS2', .data$relative_intensity > relative_intensity_threshold) %>%
-                          dplyr::mutate(column_name = stringr::str_c(.data$`instrument type`, '_CE',.data$`collision energy voltage`, 'V')) %>%
+                          dplyr::mutate(column_name = stringr::str_c('mode_', .data$mode, '_', .data$`instrument type`, '_CE_', .data$`collision energy voltage`, 'V')) %>%
                           dplyr::group_by(.data$inchiKey, .data$column_name) %>%
                           dplyr::mutate(display_for_column = paste(.data$mz, collapse = '; ')) %>%
                           dplyr::ungroup() %>%

@@ -48,6 +48,7 @@ obtain_spectra_from_inchiKey <- function(inchiKey) {
 get_spectra_from_result <- function(result) {
   res_list <- list()
   temp <- httr::content(result)
+ 
   for ( i in seq_len(length(temp))) {
 
     res_list[[i]] <- temp[[i]]$metaData %>%
@@ -61,6 +62,7 @@ get_spectra_from_result <- function(result) {
     res_list[[i]]$inchiKey <- temp[[i]]$compound[[1]]$inchiKey
 
   }
+
   res_list %>% dplyr::bind_rows() %>% return()
 }
 
@@ -86,14 +88,15 @@ expand_by_spectra <- function(parsed_result) {
     colnames(temp) <- c('spectra_data')
 
     results_list[[i]] <- temp %>%
-      tidyr::separate_wider_delim(.data$spectra_data, delim = ':', names = c('mz', 'relative_intensity')) %>%
+      tidyr::separate_wider_delim(.data$spectra_data, delim = ':', names = c( 'mz', 'relative_intensity')) %>%
       dplyr::cross_join(parsed_result[i,] %>% dplyr::select(-.data$spectrum))
 
   }
   temp_res_df <- dplyr::bind_rows(results_list)
+  
    if (nrow(temp_res_df > 0)) {
      temp_res_df <-  temp_res_df %>%
-    dplyr::mutate(mz = as.numeric(.data$mz), relative_intensity = as.numeric(.data$relative_intensity))
+    dplyr::mutate(mode = `ionization mode`, mz = as.numeric(.data$mz), relative_intensity = as.numeric(.data$relative_intensity))
 
    }
   return(temp_res_df)
