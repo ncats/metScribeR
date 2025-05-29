@@ -790,7 +790,7 @@ find_adduct_conflicts <- function (storage_object, mz_tolerance = storage_object
     mz_i <- storage_object$adduct_df[[i, 'mz_value']]
     rt_i <- storage_object$adduct_df[[i, 'rt_value']]
 
-    conflict_results <- storage_object$adduct_df %>%
+    conflict_results <- storage_object$adduct_df %>% dplyr::filter(.data$has_good_peak == T) %>%
 
       dplyr::filter(.data$unique_adduct_id != storage_object$adduct_df[[i, 'unique_adduct_id']]) %>%
 
