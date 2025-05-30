@@ -53,7 +53,6 @@ user_data_input <- function(
 
   storage_object$standard_df <- dplyr::bind_rows(storage_object$standard_df, standard_df)
 
-
   #adduct_search_df
   storage_object$adduct_search_df <- dplyr::bind_rows(storage_object$adduct_search_df, adduct_search_df)
 
@@ -69,6 +68,8 @@ user_data_input <- function(
   storage_object$library_data$output_directory_path <- output_directory_path
 
   files_for_import <- c(storage_object$standard_df$pos_mode_mzML_file_path, storage_object$standard_df$neg_mode_mzML_file_path)
+  
+  files_for_import <- files_for_import[!is.na(files_for_import)]
 
   if (!all(file.exists(files_for_import))) {
     files_missing <- files_for_import[!file.exists(files_for_import)]
@@ -169,20 +170,33 @@ import_eic_data <- function (storage_object) {
     adduct_search_df_i <- adduct_search_df %>% dplyr::mutate(mz = .data$change_from_neutral + standards_for_import[[i, 'monoisotopic_mass']])
 
     #create the eic's here
-    eic_pos <- create_eic(data_pos, adduct_search_df_i %>% dplyr::filter(.data$mode == 'POS') %>% dplyr::pull(.data$mz), eic_mz_tolerance) %>%
-      dplyr::mutate(mode = 'POS') %>%
-      dplyr::left_join(adduct_search_df_i, dplyr::join_by(x$mz == y$mz, x$mode == y$mode))
+    if(nrow(data_pos) > 0){
+      eic_pos <- create_eic(data_pos, adduct_search_df_i %>% dplyr::filter(.data$mode == 'POS') %>% dplyr::pull(.data$mz), eic_mz_tolerance) %>%
+        dplyr::mutate(mode = 'POS') %>%
+        dplyr::left_join(adduct_search_df_i, dplyr::join_by(x$mz == y$mz, x$mode == y$mode))
+    } else {
+      eic_pos <- data.frame()
+      }
 
+    if(nrow(data_neg) > 0){
     eic_neg <- create_eic(data_neg, adduct_search_df_i %>% dplyr::filter(.data$mode == 'NEG') %>% dplyr::pull(.data$mz), eic_mz_tolerance) %>%
       dplyr::mutate(mode = 'NEG') %>%
       dplyr::left_join(adduct_search_df_i, dplyr::join_by(x$mz == y$mz, x$mode == y$mode))
+    } else {
+      eic_neg <- data.frame()
+      }
 
     dplyr::bind_rows(eic_pos, eic_neg) %>% dplyr::mutate(unique_standard_id = standards_for_import[[i, 'unique_standard_id']])
   }
-
+  print('end cluster')
   parallel::stopCluster(cl)
 
   results_list <- dplyr::bind_rows(results_list) %>% dplyr::rename(mz_value = .data$mz, adduct_identity = .data$adduct)
+  
+  if(!nrow(results_list) > 0) {
+    stop('No EIC data was detected for any adduct of any standard! Please fix this and resubmit!')
+  }
+
 
   #store appropriate adduct-level results in adduct_df
 
@@ -839,7 +853,8 @@ export_library_csv <- function(storage_object, save_file_path) {
                   .data$rt_value,
                   .data$adduct_identity,
                   .data$conflict_adduct_ids,
-                  .data$has_good_peak
+                  .data$has_good_peak,
+                  .data$additional_identifiers
                   ) %>%
     readr::write_csv(save_file_path)
 }
@@ -879,7 +894,8 @@ export_library_metrics_csv <- function(storage_object, save_file_path) {
       .data$number_boundaries_in_adduct,
       .data$peak_width_half_max,
       .data$manual_annotation,
-      .data$passed_initial_filtering
+      .data$passed_initial_filtering,
+      .data$additional_identifiers
     ) %>%
     readr::write_csv(save_file_path)
 }

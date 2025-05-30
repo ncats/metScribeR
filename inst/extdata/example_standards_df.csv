@@ -1,5 +1,5 @@
-common_name,monoisotopic_mass,pos_mode_mzML_file_path,neg_mode_mzML_file_path,inchiKey
-TRYPTOPHAN,204.08988,extdata/example_mzML_dir/TRYPTOPHAN_POS.mzML,extdata/example_mzML_dir/TRYPTOPHAN_NEG.mzML,QIVBCDIJIAJPQS-VIFPVBQESA-N
-CITRATE,192.027,extdata/example_mzML_dir/CITRATE_POS.mzML,extdata/example_mzML_dir/CITRATE_NEG.mzML,KRKNYBCHXYNGOX-UHFFFAOYSA-K
-THREONINE,119.05821,extdata/example_mzML_dir/THREONINE_POS.mzML,extdata/example_mzML_dir/THREONINE_NEG.mzML,AYFVYJQAPQTCCC-GBXIJSLDSA-N
-ALLOTHREONINE,119.0582,extdata/example_mzML_dir/ALLOTHREONINE_POS.mzML,extdata/example_mzML_dir/ALLOTHREONINE_NEG.mzML,AYFVYJQAPQTCCC-HRFVKAFMSA-N
+common_name,monoisotopic_mass,pos_mode_mzML_file_path,neg_mode_mzML_file_path,inchiKey,additional_identifiers
+TRYPTOPHAN,204.08988,extdata/example_mzML_dir/TRYPTOPHAN_POS.mzML,extdata/example_mzML_dir/TRYPTOPHAN_NEG.mzML,QIVBCDIJIAJPQS-VIFPVBQESA-N,HMDB0000929; N[C@@H](CC1=CNC2=C1C=CC=C2)C(O)=O
+CITRATE,192.027,extdata/example_mzML_dir/CITRATE_POS.mzML,extdata/example_mzML_dir/CITRATE_NEG.mzML,KRKNYBCHXYNGOX-UHFFFAOYSA-K,HMDB0000094
+THREONINE,119.05821,extdata/example_mzML_dir/THREONINE_POS.mzML,extdata/example_mzML_dir/THREONINE_NEG.mzML,AYFVYJQAPQTCCC-GBXIJSLDSA-N,C00188; C[C@@H](O)[C@H](N)C(O)=O
+ALLOTHREONINE,119.0582,extdata/example_mzML_dir/ALLOTHREONINE_POS.mzML,extdata/example_mzML_dir/ALLOTHREONINE_NEG.mzML,AYFVYJQAPQTCCC-HRFVKAFMSA-N,

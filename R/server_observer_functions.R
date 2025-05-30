@@ -40,12 +40,16 @@ shiny::observeEvent(input$standard_df_path, {
 
     if (stringr::str_detect(values$standard_df_path(), '.csv')) {
       values$standard_df <- readr::read_csv(values$standard_df_path(), show_col_types = F)
+      check_standard_df(values$standard_df)
     } else if (stringr::str_detect(values$standard_df_path(), '.tsv')) {
       values$standard_df <- readr::read_tsv(values$standard_df_path(), show_col_types = F)
+      check_standard_df(values$standard_df)
     }
 
     choices_for_selection <- c(values$standard_df$pos_mode_mzML_file_path, values$standard_df$neg_mode_mzML_file_path)
     names(choices_for_selection) <- stringr::str_extract(choices_for_selection, '(?<=\\/)[^\\/]+\\.mzML$')
+    
+    choices_for_selection <- choices_for_selection[!is.na(choices_for_selection)]
 
     shiny::updateSelectInput(
 
@@ -120,16 +124,20 @@ input_data_submitted_observer_function <- function(input, output, values){
       #Read compound spreadsheet
       if (stringr::str_detect(values$standard_df_path(), '.csv')) {
         values$standard_df <- readr::read_csv(values$standard_df_path(), show_col_types = F)
+        check_standard_df(values$standard_df)
       } else if (stringr::str_detect(values$standard_df_path(), '.tsv')) {
         values$standard_df <- readr::read_tsv(values$standard_df_path(), show_col_types = F)
+        check_standard_df(values$standard_df)
       }
 
 
       #Read adduct spreadsheet
       if (stringr::str_detect(values$adduct_df_path(), '.csv')) {
         values$adduct_df <- readr::read_csv(values$adduct_df_path(), show_col_types = F)
+        check_adduct_df(values$adduct_df)
       } else if (stringr::str_detect(values$adduct_df_path(), '.tsv')) {
         values$adduct_df <- readr::read_tsv(values$adduct_df_path(), show_col_types = F)
+        check_adduct_df(values$adduct_df)
       }
 
       #initialize metScribeR storage_object
