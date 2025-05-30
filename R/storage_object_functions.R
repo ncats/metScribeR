@@ -842,21 +842,68 @@ find_adduct_conflicts <- function (storage_object, mz_tolerance = storage_object
 #'
 #' @export
 export_library_csv <- function(storage_object, save_file_path) {
+  
+  
+  MSMS_formatted_temp <- storage_object$msms_df %>%
+    dplyr::left_join(storage_object$standard_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
 
+    dplyr::filter(has_msms_data == T) 
+  
+  if (nrow(MSMS_formatted_temp) > 0) {
+    MSMS_formatted <- MSMS_formatted_temp %>%
+    dplyr::select(common_name, inchiKey, dplyr::starts_with('mode')) %>%
+    tidyr::pivot_longer(dplyr::starts_with('mode'), names_to = 'Conditions', values_to = 'MSMS') %>%
+    dplyr::filter(!is.na(MSMS)) %>%
+    dplyr::group_by(common_name) %>%
+    dplyr::mutate(Conditions = stringr::str_c(Conditions, ':'), MSMS = paste(Conditions, MSMS, collapse = ' ')) %>%
+    dplyr::distinct(common_name, .keep_all = T) %>%
+    dplyr::select(common_name, MSMS) %>%
+    dplyr::ungroup()
+  
   storage_object$standard_df %>%
     dplyr::left_join(storage_object$adduct_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
     dplyr::left_join(storage_object$peak_df, dplyr::join_by(x$best_peak_id == y$unique_peak_id)) %>%
     dplyr::left_join(storage_object$msms_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
+    
+    dplyr::filter(manual_annotation == 'Good') %>%
+    dplyr::left_join(MSMS_formatted, dplyr::join_by(common_name)) %>%
+    
     dplyr::select(
-                  .data$common_name,
-                  .data$mz_value,
-                  .data$rt_value,
-                  .data$adduct_identity,
-                  .data$conflict_adduct_ids,
-                  .data$has_good_peak,
-                  .data$additional_identifiers
-                  ) %>%
+      .data$common_name,
+      .data$adduct_identity,
+      .data$mz_value,
+      .data$rt_value,
+      .data$internal_identification_probability,
+      .data$conflict_adduct_ids,
+      .data$manual_annotation,
+      .data$additional_identifiers,
+      .data$inchiKey,
+      .data$MSMS
+    ) %>%
     readr::write_csv(save_file_path)
+  } else {
+    storage_object$standard_df %>%
+      dplyr::left_join(storage_object$adduct_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
+      dplyr::left_join(storage_object$peak_df, dplyr::join_by(x$best_peak_id == y$unique_peak_id)) %>%
+      dplyr::left_join(storage_object$msms_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
+      
+      dplyr::filter(manual_annotation == 'Good') %>%
+      
+      
+      dplyr::select(
+        .data$common_name,
+        .data$adduct_identity,
+        .data$mz_value,
+        .data$rt_value,
+        .data$internal_identification_probability,
+        .data$conflict_adduct_ids,
+        .data$manual_annotation,
+        .data$additional_identifiers,
+        .data$inchiKey
+
+      ) %>%
+      readr::write_csv(save_file_path)
+  }
 }
 
 #' @title export_library_metrics_csv
