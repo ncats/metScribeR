@@ -61,17 +61,20 @@ runMetScribeRShinyApp()
 1. In the wet lab, process authentic standards with LC-MS in positive and negative ESI modes and convert the results to .mzML format. MSConvert may be a helpful tool to convert various mass spectrometry data formats to .mzML.
 
 
-2. Create standards_df.csv (or .tsv) with the following columns: common_name, with the name of each standard; monoisotopic_mass, the neutral mass of each standard; pos_mode_mzML_file_path, with the absolute or relative path to the pos mode mzML file corresponding to each standard; and neg_mode_mzML_file_path, with the absolute or relative path to the neg mode mzML file corresponding to each standard. Each row should be a unique standard with a single monoisotopic_mass. If you have multiple standards per mzML file, list each standard in a separate row and direct each row to the correct mzML file, repeating mzML file paths as necessary.
+2. Create standards_df.csv (or .tsv) with the following required, identically spelled column names: common_name, with the name of each standard; monoisotopic_mass, the neutral mass of each standard; pos_mode_mzML_file_path, with the absolute or relative path to the pos mode mzML file corresponding to each standard; and neg_mode_mzML_file_path, with the absolute or relative path to the neg mode mzML file corresponding to each standard. Each row should have a unique common_name with a single monoisotopic_mass, and at least one non-missing mzML file. If you have multiple standards per mzML file, list each standard in a separate row and direct each row to the correct mzML file, repeating mzML file paths as necessary. Optionally, you may also include inchiKey, with an inchiKey to search for MSMS spectra from MassBank of North America; or additional_identifiers, with any character type data that may be useful. Other column names, or incorrectly spelled/cased column names, will cause an error.
+
+![image](https://github.com/user-attachments/assets/2a33894b-a936-4f96-bca5-6fa764cd4301)
+
 
 ![image](https://github.com/user-attachments/assets/3d1d35ce-d4cb-44cb-99a0-5e3a5173f474)
 
-3. Create adduct_df.csv (or .tsv) with the following columns: adduct, with the name of each adduct; change_from_neutral, with the difference between the adduct and its neutral mass; and mode, with either POS or NEG depending on the charge of the indicated ion.
+3. Create adduct_df.csv (or .tsv) with the following columns: adduct, with the name of each adduct; change_from_neutral, with the difference between the adduct and its neutral mass; and mode, with either POS or NEG depending on the charge of the indicated ion. All of these column names are required
 
 <img width="206" alt="image" src="https://github.com/user-attachments/assets/522a2a50-8b44-4e78-90fe-4891ecedaf2e" />
 
 4. Launch the metScribeR Shiny application in R with metScribeR::runMetScribeRShinyApp()
 
-5. Upload the standards and adduct csv files to the appropriate input boxes in metScribeR and select an output directory for results. Use the noise plot figure on the right side of the screen to find and input the level of the background noise, below which all MS observations are not included in processing. Finally, choose an m/z and RT tolerance for creating EICs and distinguishing between adducts. These tolerances should be set based on the ability for the LC-MS equipment to confidently separate two signals. Then, click the submit button. Alternatively, in lieu of starting a new experiment, a saved metScribeR storage object can be loaded to resume progress on a previously started analysis.
+5. Upload the standards and adduct csv files to the appropriate input boxes and select an output directory for results. Use the noise plot figure on the right side of the screen to find and input the level of the background noise, below which all MS observations are not included in processing. Finally, choose an m/z and RT tolerance for creating EICs and distinguishing between adducts. These tolerances should be set based on the ability for the LC-MS equipment to confidently separate two signals. Then, click the submit button. Alternatively, in lieu of starting a new experiment, a saved metScribeR storage object can be loaded to resume progress on a previously started analysis. For large submissions, this computation will take some time (~30 min for 12000 mzML files).
 
 
 ![image](https://github.com/user-attachments/assets/4cb87a3c-9022-4b9a-9f7f-f964574f4aed)
@@ -89,6 +92,16 @@ runMetScribeRShinyApp()
 8. Finally, move to the View/Export Library Tab. IMPORTANT: the library must be updated with the update library button for results to appear in the displayed table. If desired, use the check for crossed adducts and search MoNA for MS/MS data buttons to add internal identification probability and MS/MS data to the exported results. Note collection of MS/MS information is dependent on the MoNA server speed and can often be slow. Use the Export Library csv button to save progress and export .csv library results for use identifying experimental compounds.
 
 ![image](https://github.com/user-attachments/assets/9177b223-484f-40fc-a936-a160562accc3)
+
+## Output
+The exported_metScribeR_library.csv file is the primary library including all 'good' adducts and information relevant for making identifications with your new library.
+The exported_metScribeR_library_with_metrics.csv file includes all 'good', 'bad', and 'multimodal/indeterminate' adducts and metrics describing the peak used for RT assignment.
+The exported_metScribeR_MoNA_MSMS.csv file includes all MSMS information from MoNA.
+
+The storage_object.RDS includes the data and state of metScribeR when the file was saved, and can be reloaded to continue your progress.
+The storage_object_initial includes the data and state of metScribeR after the initial submit button finished loading, and can be reloaded to restart your progress without repeating the long, initial computation.
+
+The Figures directory includes a .png of each peak reviewed manually for later reference.
 
 ## Citation
 The manuscript for metScribeR is currently in preparation.
