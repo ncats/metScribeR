@@ -63,9 +63,6 @@ runMetScribeRShinyApp()
 
 2. Create standards_df.csv (or .tsv) with the following required, identically spelled column names: common_name, with the name of each standard; monoisotopic_mass, the neutral mass of each standard; pos_mode_mzML_file_path, with the absolute or relative path to the pos mode mzML file corresponding to each standard; and neg_mode_mzML_file_path, with the absolute or relative path to the neg mode mzML file corresponding to each standard. Each row should have a unique common_name with a single monoisotopic_mass, and at least one non-missing mzML file. If you have multiple standards per mzML file, list each standard in a separate row and direct each row to the correct mzML file, repeating mzML file paths as necessary. Optionally, you may also include inchiKey, with an inchiKey to search for MSMS spectra from MassBank of North America; or additional_identifiers, with any character type data that may be useful. Other column names, or incorrectly spelled/cased column names, will cause an error.
 
-![image](https://github.com/user-attachments/assets/2a33894b-a936-4f96-bca5-6fa764cd4301)
-
-
 ![image](https://github.com/user-attachments/assets/3d1d35ce-d4cb-44cb-99a0-5e3a5173f474)
 
 3. Create adduct_df.csv (or .tsv) with the following columns: adduct, with the name of each adduct; change_from_neutral, with the difference between the adduct and its neutral mass; and mode, with either POS or NEG depending on the charge of the indicated ion. All of these column names are required
