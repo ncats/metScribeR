@@ -187,9 +187,85 @@ custom_naming_function <- function (thing_to_name, name) {
   return(thing_to_name)
 }
 
+#' @title check_standard_df
+#'
+#' @description
+#' Produces an error if required columns are missing, standards are missing mzML files, or unknown columns are present. 
+#'
+#' @param standard_df The object being checked
+#'
+#' @returns T if df passes, otherwise produces error with message
+#'
+#' @keywords internal
+#' @noRd
+check_standard_df <- function(standard_df) {
+  
+  #check if required column names are present
+  if(!all( c('common_name',	'monoisotopic_mass',	'pos_mode_mzML_file_path',	'neg_mode_mzML_file_path') %in% colnames(standard_df))) {
+    stop('One or more required columns are missing from your standard_df input. Please confirm the following column names are included: common_name, monoisotopic_mass, pos_mode_msML_file_path, and neg_mode_mzML_file_path')
+  }
+  
+  #Check for rows with no mzML file
+  standard_df_temp <- standard_df %>% dplyr::mutate(one_file_good = !is.na(pos_mode_mzML_file_path) | !is.na(neg_mode_mzML_file_path))
+  if(!all(standard_df_temp$one_file_good)) {
+    stop('One or more rows in your data has no mzML files associated. Please remove these rows before proceeding.')
+  }
+  
+  #checks for duplicate or missing common_name
+  if(length(standard_df$common_name) != length(unique(standard_df$common_name)) | any(is.na(standard_df$common_name))) {
+    stop('Duplicate common_name entries detected. Please ensure all common_name entries are unique and not missing.')
+  }
+  
+  #checks for missing mass
+  if(any(is.na(standard_df$monoisotopic_mass))) {
+    stop('Missing entries in monoisotopic_mass detected. Please remove or fill these rows.')
+  }
+  
+  
+  #check for extra columns
+  if(!all(colnames(standard_df) %in%
+          c('common_name',	'monoisotopic_mass',	'pos_mode_mzML_file_path',	'neg_mode_mzML_file_path', 'inchiKey', 'additional_identifiers'))) {
+    stop('Unknown column name identified. Please ensure only the following columns are present in your standard_df file: 
+         common_name,	monoisotopic_mass, pos_mode_mzML_file_path,	neg_mode_mzML_file_path, inchikey, additional_identifiers')
+  }
+  
+  return(T)
 
+}
 
-
+#' @title check_adduct_df
+#'
+#' @description
+#' Produces an error if required columns are missing, or if information is missing from columns
+#'
+#' @param adduct_df The object being checked
+#'
+#' @returns T if df passes, otherwise produces error with message
+#'
+#' @keywords internal
+#' @noRd
+check_adduct_df <- function(adduct_df) {
+  #check if required column names are present
+  if(!all( c('adduct', 'change_from_neutral', 'mode') %in% colnames(adduct_df))) {
+    stop('One or more required columns are missing from your standard_df input. Please confirm the following column names are included: adduct, change_from_neutral, mode')
+  }
+  
+  #Check for rows with no mzML file
+  adduct_df_temp <- adduct_df %>% dplyr::mutate(good = !is.na(adduct) & !is.na(change_from_neutral) & !is.na(mode))
+  if(!all(adduct_df_temp$good)) {
+    stop('One or more rows in your data has missing entries. Please remove or fill these rows before proceeding.')
+  }
+  
+  #check for extra columns
+  if(!all(colnames(adduct_df) %in%
+          c('adduct', 'change_from_neutral', 'mode'))) {
+    stop('Unknown column name identified. Please ensure only the following columns are present in your standard_df file: 
+         adduct, change_from_neutral, mode')
+  }
+  
+  return(T)
+  
+}
 
 
 

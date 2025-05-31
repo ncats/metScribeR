@@ -53,7 +53,6 @@ user_data_input <- function(
 
   storage_object$standard_df <- dplyr::bind_rows(storage_object$standard_df, standard_df)
 
-
   #adduct_search_df
   storage_object$adduct_search_df <- dplyr::bind_rows(storage_object$adduct_search_df, adduct_search_df)
 
@@ -69,6 +68,8 @@ user_data_input <- function(
   storage_object$library_data$output_directory_path <- output_directory_path
 
   files_for_import <- c(storage_object$standard_df$pos_mode_mzML_file_path, storage_object$standard_df$neg_mode_mzML_file_path)
+  
+  files_for_import <- files_for_import[!is.na(files_for_import)]
 
   if (!all(file.exists(files_for_import))) {
     files_missing <- files_for_import[!file.exists(files_for_import)]
@@ -169,20 +170,33 @@ import_eic_data <- function (storage_object) {
     adduct_search_df_i <- adduct_search_df %>% dplyr::mutate(mz = .data$change_from_neutral + standards_for_import[[i, 'monoisotopic_mass']])
 
     #create the eic's here
-    eic_pos <- create_eic(data_pos, adduct_search_df_i %>% dplyr::filter(.data$mode == 'POS') %>% dplyr::pull(.data$mz), eic_mz_tolerance) %>%
-      dplyr::mutate(mode = 'POS') %>%
-      dplyr::left_join(adduct_search_df_i, dplyr::join_by(x$mz == y$mz, x$mode == y$mode))
+    if(nrow(data_pos) > 0){
+      eic_pos <- create_eic(data_pos, adduct_search_df_i %>% dplyr::filter(.data$mode == 'POS') %>% dplyr::pull(.data$mz), eic_mz_tolerance) %>%
+        dplyr::mutate(mode = 'POS') %>%
+        dplyr::left_join(adduct_search_df_i, dplyr::join_by(x$mz == y$mz, x$mode == y$mode))
+    } else {
+      eic_pos <- data.frame()
+      }
 
+    if(nrow(data_neg) > 0){
     eic_neg <- create_eic(data_neg, adduct_search_df_i %>% dplyr::filter(.data$mode == 'NEG') %>% dplyr::pull(.data$mz), eic_mz_tolerance) %>%
       dplyr::mutate(mode = 'NEG') %>%
       dplyr::left_join(adduct_search_df_i, dplyr::join_by(x$mz == y$mz, x$mode == y$mode))
+    } else {
+      eic_neg <- data.frame()
+      }
 
     dplyr::bind_rows(eic_pos, eic_neg) %>% dplyr::mutate(unique_standard_id = standards_for_import[[i, 'unique_standard_id']])
   }
-
+  print('end cluster')
   parallel::stopCluster(cl)
 
   results_list <- dplyr::bind_rows(results_list) %>% dplyr::rename(mz_value = .data$mz, adduct_identity = .data$adduct)
+  
+  if(!nrow(results_list) > 0) {
+    stop('No EIC data was detected for any adduct of any standard! Please fix this and resubmit!')
+  }
+
 
   #store appropriate adduct-level results in adduct_df
 
@@ -790,7 +804,7 @@ find_adduct_conflicts <- function (storage_object, mz_tolerance = storage_object
     mz_i <- storage_object$adduct_df[[i, 'mz_value']]
     rt_i <- storage_object$adduct_df[[i, 'rt_value']]
 
-    conflict_results <- storage_object$adduct_df %>%
+    conflict_results <- storage_object$adduct_df %>% dplyr::filter(.data$has_good_peak == T) %>% #note that this filter controls the behavior that only 'good' peaks can be considered as conflicts.
 
       dplyr::filter(.data$unique_adduct_id != storage_object$adduct_df[[i, 'unique_adduct_id']]) %>%
 
@@ -828,20 +842,68 @@ find_adduct_conflicts <- function (storage_object, mz_tolerance = storage_object
 #'
 #' @export
 export_library_csv <- function(storage_object, save_file_path) {
+  
+  
+  MSMS_formatted_temp <- storage_object$msms_df %>%
+    dplyr::left_join(storage_object$standard_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
 
+    dplyr::filter(has_msms_data == T) 
+  
+  if (nrow(MSMS_formatted_temp) > 0) {
+    MSMS_formatted <- MSMS_formatted_temp %>%
+    dplyr::select(common_name, inchiKey, dplyr::starts_with('mode')) %>%
+    tidyr::pivot_longer(dplyr::starts_with('mode'), names_to = 'Conditions', values_to = 'MSMS') %>%
+    dplyr::filter(!is.na(MSMS)) %>%
+    dplyr::group_by(common_name) %>%
+    dplyr::mutate(Conditions = stringr::str_c(Conditions, ':'), MSMS = paste(Conditions, MSMS, collapse = ' ')) %>%
+    dplyr::distinct(common_name, .keep_all = T) %>%
+    dplyr::select(common_name, MSMS) %>%
+    dplyr::ungroup()
+  
   storage_object$standard_df %>%
     dplyr::left_join(storage_object$adduct_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
     dplyr::left_join(storage_object$peak_df, dplyr::join_by(x$best_peak_id == y$unique_peak_id)) %>%
     dplyr::left_join(storage_object$msms_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
+    
+    dplyr::filter(manual_annotation == 'Good') %>%
+    dplyr::left_join(MSMS_formatted, dplyr::join_by(common_name)) %>%
+    
     dplyr::select(
-                  .data$common_name,
-                  .data$mz_value,
-                  .data$rt_value,
-                  .data$adduct_identity,
-                  .data$conflict_adduct_ids,
-                  .data$has_good_peak
-                  ) %>%
+      .data$common_name,
+      .data$adduct_identity,
+      .data$mz_value,
+      .data$rt_value,
+      .data$internal_identification_probability,
+      .data$conflict_adduct_ids,
+      .data$manual_annotation,
+      .data$additional_identifiers,
+      .data$inchiKey,
+      .data$MSMS
+    ) %>%
     readr::write_csv(save_file_path)
+  } else {
+    storage_object$standard_df %>%
+      dplyr::left_join(storage_object$adduct_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
+      dplyr::left_join(storage_object$peak_df, dplyr::join_by(x$best_peak_id == y$unique_peak_id)) %>%
+      dplyr::left_join(storage_object$msms_df, dplyr::join_by(x$unique_standard_id == y$unique_standard_id)) %>%
+      
+      dplyr::filter(manual_annotation == 'Good') %>%
+      
+      
+      dplyr::select(
+        .data$common_name,
+        .data$adduct_identity,
+        .data$mz_value,
+        .data$rt_value,
+        .data$internal_identification_probability,
+        .data$conflict_adduct_ids,
+        .data$manual_annotation,
+        .data$additional_identifiers,
+        .data$inchiKey
+
+      ) %>%
+      readr::write_csv(save_file_path)
+  }
 }
 
 #' @title export_library_metrics_csv
@@ -879,7 +941,8 @@ export_library_metrics_csv <- function(storage_object, save_file_path) {
       .data$number_boundaries_in_adduct,
       .data$peak_width_half_max,
       .data$manual_annotation,
-      .data$passed_initial_filtering
+      .data$passed_initial_filtering,
+      .data$additional_identifiers
     ) %>%
     readr::write_csv(save_file_path)
 }
@@ -934,7 +997,7 @@ save_storage_object <- function(storage_object, save_file_path) {
 #' @keywords internal
 #' @noRd
 add_msms_information <- function(storage_object, relative_intensity_threshold = 40) {
-  storage_object$msms_df <- storage_object$standard_df %>% dplyr::select(.data$unique_standard_id)
+  storage_object$msms_df <- storage_object$standard_df %>% dplyr::filter(!is.na(inchiKey)) %>% dplyr::select(.data$unique_standard_id)
 
   results_list <- list()
 
@@ -948,7 +1011,7 @@ add_msms_information <- function(storage_object, relative_intensity_threshold = 
 
       results_list[[i]] <- temp %>%
                           dplyr::filter(.data$`ms level` == 'MS2', .data$relative_intensity > relative_intensity_threshold) %>%
-                          dplyr::mutate(column_name = stringr::str_c(.data$`instrument type`, '_CE',.data$`collision energy voltage`, 'V')) %>%
+                          dplyr::mutate(column_name = stringr::str_c('mode_', .data$mode, '_', .data$`instrument type`, '_CE_', .data$`collision energy voltage`, 'V')) %>%
                           dplyr::group_by(.data$inchiKey, .data$column_name) %>%
                           dplyr::mutate(display_for_column = paste(.data$mz, collapse = '; ')) %>%
                           dplyr::ungroup() %>%

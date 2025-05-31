@@ -55,7 +55,8 @@ storage_object <- function() {list(
     common_name = character(),
     monoisotopic_mass = numeric(),
     pos_mode_mzML_file_path = character(),
-    neg_mode_mzML_file_path = character()
+    neg_mode_mzML_file_path = character(),
+    additional_identifiers = character()
   ),
 
   msms_df = data.frame(
