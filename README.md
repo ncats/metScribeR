@@ -47,7 +47,8 @@ devtools::install_github('ncats/metScribeR')
 
 dir.create('C:/Users/user123/Downloads/metScribeR_extdata_folder')
 
-file.copy(from = system.file('extdata', package = 'metScribeR'), to = 'C:/Users/user123/Downloads/metScribeR_extdata_folder', recursive=T)
+file.copy(from = system.file('extdata', package = 'metScribeR'),
+ to = 'C:/Users/user123/Downloads/metScribeR_extdata_folder', recursive=T)
 
 library(metScribeR)
 
