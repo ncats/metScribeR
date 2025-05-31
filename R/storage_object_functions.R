@@ -600,7 +600,7 @@ initial_filtering <- function(storage_object, number_of_boundaries_threshold, nu
 noise_plot <- function(plotting_mzML_file_path, noise_level_plotting = NA) {
   custom_plot <- parse_mzML(plotting_mzML_file_path, 0) %>%
     dplyr::slice_sample(n = min(nrow(.), 5E3)) %>%
-    ggplot2::ggplot(ggplot2::aes(x = .data$mz, y = 0, yend = .data$intensity)) +
+    ggplot2::ggplot(ggplot2::aes(x = .data$mz, y = 0, yend = .data$intensity, xend = .data$mz)) +
     ggplot2::geom_segment() +
     ggplot2::labs(y = 'intensity', x = 'm/z', title = stringr::str_extract(plotting_mzML_file_path, '([^\\/]+$)'))
 
