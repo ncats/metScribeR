@@ -59,6 +59,7 @@ runMetScribeRShinyApp()
 ## Instructions for use
 1. In the wet lab, process authentic standards with LC-MS in positive and negative ESI modes and convert the results to .mzML format. MSConvert may be a helpful tool to convert various mass spectrometry data formats to .mzML.
 
+
 2. Create standards_df.csv (or .tsv) with the following columns: common_name, with the name of each standard; monoisotopic_mass, the neutral mass of each standard; pos_mode_mzML_file_path, with the absolute or relative path to the pos mode mzML file corresponding to each standard; and neg_mode_mzML_file_path, with the absolute or relative path to the neg mode mzML file corresponding to each standard. Each row should be a unique standard with a single monoisotopic_mass. If you have multiple standards per mzML file, list each standard in a separate row and direct each row to the correct mzML file, repeating mzML file paths as necessary.
 
 ![image](https://github.com/user-attachments/assets/3d1d35ce-d4cb-44cb-99a0-5e3a5173f474)
@@ -70,6 +71,7 @@ runMetScribeRShinyApp()
 4. Launch the metScribeR Shiny application in R with metScribeR::runMetScribeRShinyApp()
 
 5. Upload the standards and adduct csv files to the appropriate input boxes in metScribeR and select an output directory for results. Use the noise plot figure on the right side of the screen to find and input the level of the background noise, below which all MS observations are not included in processing. Finally, choose an m/z and RT tolerance for creating EICs and distinguishing between adducts. These tolerances should be set based on the ability for the LC-MS equipment to confidently separate two signals. Then, click the submit button. Alternatively, in lieu of starting a new experiment, a saved metScribeR storage object can be loaded to resume progress on a previously started analysis.
+
 
 ![image](https://github.com/user-attachments/assets/4cb87a3c-9022-4b9a-9f7f-f964574f4aed)
 
