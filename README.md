@@ -47,14 +47,18 @@ BiocManager::install("mzR")
 
 devtools::install_github('ncats/metScribeR')
 
-dir.create('C:/Users/user123/Downloads/metScribeR_extdata_folder')
+#in the following line, enter a path for a folder you would like to place the example data in.
+# This folder can be created with the dir.create function below.
+example_data_dir_path <- 'C:/Users/user123/Downloads/metScribeR_extdata_folder'
+
+dir.create(example_data_dir_path)
 
 file.copy(from = system.file('extdata', package = 'metScribeR'),
- to = 'C:/Users/user123/Downloads/metScribeR_extdata_folder', recursive=T)
+ to = example_data_dir_path, recursive=T)
 
 library(metScribeR)
 
-setwd('C:/Users/user123/Downloads/metScribeR_extdata_folder')
+setwd(example_data_dir_path)
 
 runMetScribeRShinyApp()
 ```
