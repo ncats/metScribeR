@@ -7,6 +7,7 @@ Install metScribeR as an R package and initialize the Shiny application with the
 
 ```
 install.packages('devtools')
+library(devtools)
 devtools::install_github('ethanbass/chromatographR')
 
 if (!require("BiocManager", quietly = TRUE))
@@ -36,6 +37,7 @@ The example_standards_df.csv file contains a pre-set, relative path to mzML file
 
 ```
 install.packages('devtools')
+library(devtools)
 devtools::install_github('ethanbass/chromatographR')
 
 if (!require("BiocManager", quietly = TRUE))
@@ -104,5 +106,8 @@ The Figures directory includes a .png of each peak reviewed manually for later r
 The manuscript for metScribeR is currently in preparation.
 
 ## Contact
-
+For questions or issues, please contact:
+Ewy Mathé ewy.mathe@nih.gov
+Jason Inman jason.inman@nih.gov
+Adam Tisch adtisch@umich.edu
 
